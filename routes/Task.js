@@ -30,20 +30,19 @@ router.post("/tasks", (req, res) => {
   req.session.taskList = taskList;
   res.status(201).json(task);
 });
+
 router.put("/tasks/:index", (req, res) => {
   const { index } = req.params;
-  const { text, ordre } = req.body;
+  const { ordre } = req.body;
   let taskList = req.session.taskList || [];
   const task = taskList[index];
   if (!task) {
     return res.status(404).send("Task not found");
   }
 
-
   const oldOrdre = task.ordre;
   const newOrdre = Number(ordre);
 
-  task.text = text;
   task.ordre = newOrdre;
 
   for (let i = 0; i < taskList.length; i++) {
@@ -54,6 +53,12 @@ router.put("/tasks/:index", (req, res) => {
         otherTask.ordre++;
       } else if (newOrdre > oldOrdre && otherOrdre <= newOrdre && otherOrdre > oldOrdre) {
         otherTask.ordre--;
+      }
+
+      if (otherTask.ordre < 0) {
+        otherTask.ordre = 0;
+      } else if (otherTask.ordre >= taskList.length) {
+        otherTask.ordre = taskList.length - 1;
       }
     }
   }
